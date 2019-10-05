@@ -41,8 +41,8 @@ export class AddonVideoplaytimeProvider {
     		this.userId = this.sitesProvider.getCurrentSiteUserId();
     		console.log(this.userId);
     		let data = {
-    			courseid: courseId,
-    			userid: this.userId
+    			courseid: courseId
+    			
     		}
 
             /*let preset = {
@@ -76,6 +76,23 @@ export class AddonVideoplaytimeProvider {
 
     		return result;
     	})
+    }
+
+    userCoursePlaytimeAccess(courseId: number, userId?: number): Promise<any> {
+        return this.isPluginForCourseEnabled(courseId).then((result)=>{
+            if (result == 'true') {
+                return this.sitesProvider.getSite(this.siteId).then((site) => {
+                    let data = {
+                        courseid: courseId,
+                        userid: userId || site.getUserId()
+                    };
+                    return site.read('local_vpt_userCoursePlaytimeAccess', data, {}).then((accessData) => {
+                        return accessData
+                    })      
+                })
+            }
+            return "true";
+        })
     }
 
     

@@ -66,7 +66,8 @@ export class AddonVideoplaytimeCourseComponent {
     }
 
     secondsToDhms(seconds: number): String {
-        seconds = Number(seconds);
+
+        seconds = (seconds > 0 ) ? Number(seconds) : 0;
         var d = Math.floor(seconds / (3600*24));
         var h = Math.floor(seconds % (3600*24) / 3600);
         var m = Math.floor(seconds % 3600 / 60);

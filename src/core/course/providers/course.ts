@@ -28,7 +28,8 @@ import { CoreCourseOfflineProvider } from './course-offline';
 import { CoreSitePluginsProvider } from '@core/siteplugins/providers/siteplugins';
 import { CoreCourseFormatDelegate } from './format-delegate';
 import { CorePushNotificationsProvider } from '@core/pushnotifications/providers/pushnotifications';
-
+// LMSACE VPT-Implemtation
+import { AddonVideoplaytimeProvider } from '@addon/videoplaytime/providers/videoplaytime';
 /**
  * Service that provides some features regarding a course.
  */
@@ -104,7 +105,8 @@ export class CoreCourseProvider {
             private utils: CoreUtilsProvider, private timeUtils: CoreTimeUtilsProvider, private translate: TranslateService,
             private courseOffline: CoreCourseOfflineProvider, private appProvider: CoreAppProvider,
             private courseFormatDelegate: CoreCourseFormatDelegate, private sitePluginsProvider: CoreSitePluginsProvider,
-            private domUtils: CoreDomUtilsProvider, protected pushNotificationsProvider: CorePushNotificationsProvider) {
+            private domUtils: CoreDomUtilsProvider, protected pushNotificationsProvider: CorePushNotificationsProvider, 
+            protected playtimeProvider: AddonVideoplaytimeProvider) {
         this.logger = logger.getInstance('CoreCourseProvider');
 
         this.sitesProvider.registerSiteSchema(this.siteSchema);
@@ -954,6 +956,13 @@ export class CoreCourseProvider {
      */
     openCourse(navCtrl: NavController, course: any, params?: any): Promise<any> {
         const loading = this.domUtils.showModalLoading();
+        
+        this.playtimeProvider.userCoursePlaytimeAccess(course.id).then((access) => {
+            if (access.status == 'false') {
+                navCtrl.push('CoreCoursesDashboardPage');
+                this.domUtils.showErrorModalDefault(access.msg, 'Play time error', false, 5000)
+            }
+        })
 
         // Wait for site plugins to be fetched.
         return this.sitePluginsProvider.waitFetchPlugins().then(() => {
@@ -975,7 +984,7 @@ export class CoreCourseProvider {
                                 }).catch((error) => {
                                     deferred.reject(error);
                                 });
-                            });
+                            }); 
 
                         return deferred.promise;
                     }

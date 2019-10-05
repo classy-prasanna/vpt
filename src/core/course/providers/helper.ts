@@ -39,6 +39,8 @@ import { CoreSite } from '@classes/site';
 import { CoreLoggerProvider } from '@providers/logger';
 import * as moment from 'moment';
 
+
+
 /**
  * Prefetch info of a module.
  */
@@ -802,7 +804,7 @@ export class CoreCourseHelperProvider {
      */
     getCourse(courseId: number, siteId?: string): Promise<{enrolled: boolean, course: any}> {
         siteId = siteId || this.sitesProvider.getCurrentSiteId();
-
+        // alert('test');
         // Try with enrolled courses first.
         return this.coursesProvider.getUserCourse(courseId, false, siteId).then((course) => {
             return { enrolled: true, course: course };
