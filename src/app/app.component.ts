@@ -26,6 +26,7 @@ import { CoreLoginHelperProvider } from '@core/login/providers/helper';
 import { Keyboard } from '@ionic-native/keyboard';
 import { ScreenOrientation } from '@ionic-native/screen-orientation';
 import { CoreLoginSitesPage } from '@core/login/pages/sites/sites';
+import { CoreWSProvider, CoreWSPreSets, CoreWSFileUploadOptions } from '@providers/ws';
 
 @Component({
     templateUrl: 'app.html'
@@ -37,13 +38,21 @@ export class MoodleMobileApp implements OnInit {
     protected logger;
     protected lastUrls = {};
     protected lastInAppUrl: string;
-
+    public vptDetails = {};
+    public timespent;
+    public starttime;
+    public endtime;
+    public siteurl;
+    public videoSrc;
     constructor(private platform: Platform, logger: CoreLoggerProvider, keyboard: Keyboard, private app: IonicApp,
             private eventsProvider: CoreEventsProvider, private loginHelper: CoreLoginHelperProvider, private zone: NgZone,
             private appProvider: CoreAppProvider, private langProvider: CoreLangProvider, private sitesProvider: CoreSitesProvider,
             private screenOrientation: ScreenOrientation, private urlSchemesProvider: CoreCustomURLSchemesProvider,
-            private utils: CoreUtilsProvider, private urlUtils: CoreUrlUtilsProvider) {
+            private utils: CoreUtilsProvider, private urlUtils: CoreUrlUtilsProvider, private wsProvider: CoreWSProvider) {
         this.logger = logger.getInstance('AppComponent');
+
+        this.vptDetails =  { userid:'', timespent:'', availableTime: '' };
+        
 
         platform.ready().then(() => {
             // Okay, so the platform is ready and our plugins are available.
@@ -70,6 +79,8 @@ export class MoodleMobileApp implements OnInit {
             this.appProvider.registerBackButtonAction(() => {
                 return this.closeModal();
             }, 2000);
+
+           // let this.videoEvents = [];
         });
 
     }
@@ -261,6 +272,81 @@ export class MoodleMobileApp implements OnInit {
                 this.eventsProvider.trigger(CoreEventsProvider.ORIENTATION_CHANGE);
             }
         );
+
+        /*this.eventsProvider.on(CoreEventsProvider.CORE_LOADING_CHANGED, (data) => {
+
+            if (data.loaded) {
+                // LMSACE VPT - Add event listener for video events.
+                const videos = document.querySelectorAll('video');
+                for (let i = 0; i < videos.length; i++ ) {                   
+                    videos[i].addEventListener('play', (e) => {
+                       // var src = this.src;
+                       videos[i].pause();
+                       console.log(videos[i].src);
+                    });
+                } 
+            }
+        })*/
+
+        // window.addEventListener('play', () => {//
+         //   document.querySelector('body').addEventListener('click', (e) => {
+             //   alert();    
+            //    console.log(e)
+            //    // if (e.target.tagName.toLowerCase() === 'video') {
+
+            //    // }
+         //   })
+            
+           
+        // })
+        document.body.addEventListener('playing', (e) => { this.videoStart(e) } , true) ;      
+
+        document.body.addEventListener('ended', (e) => { this.videoStopped(e) } , true);
+        
+        document.body.addEventListener('pause', (e) => { this.videoStopped(e) } , true);
+
+    }
+
+    public videoStart(e) {
+
+        if (e.target.tagName.toLowerCase() === 'video') { 
+            this.starttime = Date.now();
+            this.timespent = 0;
+            this.videoSrc = e.target.textContent;
+        }
+    }
+
+    public videoStopped(e) {
+        if (e.target.tagName.toLowerCase() === 'video') { 
+            this.endtime = Date.now();
+            this.findTimeSpent();
+           this.UpdateUserTimeSpent();
+        }
+    }
+
+    public findTimeSpent()  {
+        if (this.starttime != '' ) {
+            this.timespent = Math.floor( (this.endtime - this.starttime ) / 1000 );
+            alert(this.timespent);
+            this.starttime = '';
+            this.endtime = '';
+        }
+    }
+
+    public UpdateUserTimeSpent() {
+        let userid = this.sitesProvider.getCurrentSiteUserId();
+        
+        let userTime = { timespent: this.timespent, source: this.videoSrc, userid: userid };
+        this.siteurl = this.sitesProvider.getCurrentSite().getURL();
+        var siteId = this.sitesProvider.getCurrentSiteId();
+        // console.log(this.sitesProvider.getCurrentSiteId());
+               
+        var vptWSavailable = this.sitesProvider.wsAvailableInCurrentSite('local_vpt_addUserTime_mobile');
+        this.sitesProvider.getSite(siteId).then((site) => {
+            site.read('local_vpt_addUserTime_mobile', userTime, {}).then((result) => {
+                console.log(result);
+            });
+        })
     }
 
     /**

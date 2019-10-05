@@ -131,6 +131,7 @@ export class AddonCompetencyProvider {
      * @return {Promise<any>} competencies if enabled for the given course, false otherwise.
      */
     isPluginForCourseEnabled(courseId: number, siteId?: string): Promise<any> {
+        
         if (!this.sitesProvider.isLoggedIn()) {
             return Promise.resolve(false);
         }

@@ -1,0 +1,13 @@
+<ion-header>
+    <ion-navbar core-back-button>
+        <ion-title>{{ title }}</ion-title>
+    </ion-navbar>
+</ion-header>
+<core-split-view>
+    <ion-content>
+        <ion-refresher [enabled]="competenciesLoaded" (ionRefresh)="refreshCompetencies($event)">
+            <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}"></ion-refresher-content>
+        </ion-refresher>
+    	test
+    </ion-content>
+</core-split-view>

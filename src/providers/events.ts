@@ -85,6 +85,9 @@ export class CoreEventsProvider {
     on(eventName: string, callBack: (value: any) => void, siteId?: string): CoreEventObserver {
         // If it's a unique event and has been triggered already, call the callBack.
         // We don't need to create an observer because the event won't be triggered again.
+
+           // console.log(eventName + "=> "+ callBack);
+
         if (this.uniqueEvents[eventName]) {
             callBack(this.uniqueEvents[eventName].data);
 
@@ -127,6 +130,7 @@ export class CoreEventsProvider {
      */
     trigger(eventName: string, data?: any, siteId?: string): void {
         this.logger.debug(`Event '${eventName}' triggered.`);
+        console.log(`Event '${eventName}' triggered.`);
         if (this.observables[eventName]) {
             if (siteId) {
                 if (!data) {

@@ -1,0 +1,35 @@
+
+<ion-content>
+    <ion-refresher [enabled]="playtimeLoaded" (ionRefresh)="refreshCoursePlaytime($event)">
+        <ion-refresher-content pullingText="{{ 'core.pulltorefresh' | translate }}"></ion-refresher-content>
+    </ion-refresher>
+    <core-loading [hideUntil]="playtimeLoaded">
+    	<ion-card *ngIf="playtime">
+    		<ng-container>
+                <ion-item text-wrap>
+                    <h2><strong>{{ 'addon.videoplaytime.allocation' | translate }}</strong></h2>
+                    <p class="playtime-data">
+                        <core-format-text [text]="secondsToDhms(playtime.maximum_time)"></core-format-text>
+                    </p>
+                </ion-item>
+            </ng-container>
+            <ng-container>       
+                <ion-item text-wrap>         
+                    <h2><strong>{{ 'addon.videoplaytime.utilised' | translate }}</strong></h2>
+                    <p class="playtime-data">
+                        <core-format-text [text]="secondsToDhms(playtime.play_time)"></core-format-text>
+                    </p>
+                </ion-item>
+            </ng-container>
+            <ng-container>    
+                <ion-item text-wrap>            
+                    <h2><strong>{{ 'addon.videoplaytime.availabletime' | translate }}</strong></h2>
+                    <p class="playtime-data">
+                        <core-format-text [text]="secondsToDhms(playtime.available_time)"></core-format-text>
+                    </p>
+                </ion-item>
+            </ng-container>
+    	</ion-card>
+    </core-loading>
+
+</ion-content>
