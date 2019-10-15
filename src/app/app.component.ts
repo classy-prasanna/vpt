@@ -28,9 +28,17 @@ import { ScreenOrientation } from '@ionic-native/screen-orientation';
 import { CoreLoginSitesPage } from '@core/login/pages/sites/sites';
 import { CoreWSProvider, CoreWSPreSets, CoreWSFileUploadOptions } from '@providers/ws';
 
+
+declare global {
+    interface Window {
+        H5P:any;
+    }
+}
+
 @Component({
     templateUrl: 'app.html'
 })
+
 export class MoodleMobileApp implements OnInit {
     // Use page name (string) because the page is lazy loaded (Ionic feature). That way we can load pages without importing them.
     // The downside is that each page needs to implement a ngModule.
@@ -38,12 +46,22 @@ export class MoodleMobileApp implements OnInit {
     protected logger;
     protected lastUrls = {};
     protected lastInAppUrl: string;
-    public vptDetails = {};
+    
+    public vptDetails = {userid: 0, timespent: 0, available_time: 0 };
     public timespent;
     public starttime;
     public endtime;
     public siteurl;
     public videoSrc;
+    public refreshVideo;
+    public videoElement: any;
+    //  declare global {
+    //     interface Window {
+    //         H5P:any;
+    //     }
+    // }
+
+
     constructor(private platform: Platform, logger: CoreLoggerProvider, keyboard: Keyboard, private app: IonicApp,
             private eventsProvider: CoreEventsProvider, private loginHelper: CoreLoginHelperProvider, private zone: NgZone,
             private appProvider: CoreAppProvider, private langProvider: CoreLangProvider, private sitesProvider: CoreSitesProvider,
@@ -51,7 +69,7 @@ export class MoodleMobileApp implements OnInit {
             private utils: CoreUtilsProvider, private urlUtils: CoreUrlUtilsProvider, private wsProvider: CoreWSProvider) {
         this.logger = logger.getInstance('AppComponent');
 
-        this.vptDetails =  { userid:'', timespent:'', availableTime: '' };
+        // this.vptDetails =  { userid:'', timespent:'', available_time: '' };
         
 
         platform.ready().then(() => {
@@ -299,20 +317,97 @@ export class MoodleMobileApp implements OnInit {
             
            
         // })
+
+        // Video element event Handlers.
+
+
         document.body.addEventListener('playing', (e) => { this.videoStart(e) } , true) ;      
 
         document.body.addEventListener('ended', (e) => { this.videoStopped(e) } , true);
         
         document.body.addEventListener('pause', (e) => { this.videoStopped(e) } , true);
 
+        /*var self = this;
+        document.body.addEventListener('load', function(e) { 
+             var element = e.target as HTMLElement;  
+            
+            if (element.tagName.toLowerCase() === 'iframe') { 
+                console.log(element.contentWindow.getElementsByClassName('h5p-iframe').length);
+                self.h5pVideoEventListener();                                
+            }
+        }, true);*/
+
+        
+       
+
+        /**/
+
+    }
+
+    // H5P video element event Handlers.
+   /* public h5pVideoEventListener() {
+            console.log(document.getElementsByClassName('h5p-iframe').length);
+        if (document.getElementsByClassName('h5p-iframe').length != 0) {
+            var iframeH5PElem = document.getElementsByClassName('h5p-iframe')[0] as HTMLIFrameElement;
+            if ("H5P" in iframeH5PElem.contentWindow) {
+                var iframeH5P = iframeH5PElem.contentWindow.H5P;
+                var iframeVideo = iframeH5P.instances[0].video;
+                iframeVideo.on('stateChange', function (event) { 
+                  switch (event.data) {
+                    case iframeH5P.Video.ENDED:
+                      console.log('Video ended after ' + iframeVideo.getCurrentTime() + ' seconds!');
+                 
+                      // Start over again?
+                      iframeVideo.play();
+                 
+                      if (iframeVideo.getDuration() > 15) {
+                        iframeVideo.seek(10);
+                      }
+                 
+                      break;
+                 
+                    case iframeH5P.Video.PLAYING:
+                      console.log('Playing'); 
+                      break;
+                 
+                    case iframeH5P.Video.PAUSED:
+                      console.log('Why you stop?');
+                 
+                      iframeVideo.setPlaybackRate(1.5); // Go fast
+                      break;
+                 
+                    case iframeH5P.Video.BUFFERING:
+                      console.log('Wait on your slow internet connection...');
+                      break;
+                  }
+                });
+            }
+        }
+    }*/
+
+    public timeout() {
+
+        this.cleartimeout();
+
+        if (this.vptDetails.available_time > 0) { 
+            this.refreshVideo = setTimeout(function() {
+                // this.videoElement.pause();
+                this.appProvider.getRootNavController().setRoot('CoreCoursesDashboardPage');
+            }, this.vptDetails.available_time * 1000);
+        }
+    }
+    public cleartimeout() {
+        clearTimeout(this.refreshVideo);
     }
 
     public videoStart(e) {
 
         if (e.target.tagName.toLowerCase() === 'video') { 
+            this.videoElement = e.target as HTMLIFrameElement;
             this.starttime = Date.now();
             this.timespent = 0;
             this.videoSrc = e.target.textContent;
+            this.timeout();
         }
     }
 
@@ -327,7 +422,7 @@ export class MoodleMobileApp implements OnInit {
     public findTimeSpent()  {
         if (this.starttime != '' ) {
             this.timespent = Math.floor( (this.endtime - this.starttime ) / 1000 );
-            alert(this.timespent);
+            // alert(this.timespent);
             this.starttime = '';
             this.endtime = '';
         }
@@ -344,7 +439,11 @@ export class MoodleMobileApp implements OnInit {
         var vptWSavailable = this.sitesProvider.wsAvailableInCurrentSite('local_vpt_addUserTime_mobile');
         this.sitesProvider.getSite(siteId).then((site) => {
             site.read('local_vpt_addUserTime_mobile', userTime, {}).then((result) => {
-                console.log(result);
+                if (result.available_time) {
+                    this.vptDetails = result;
+                                     
+                    
+                }
             });
         })
     }
