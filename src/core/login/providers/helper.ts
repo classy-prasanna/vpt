@@ -81,6 +81,9 @@ export class CoreLoginHelperProvider {
     protected pageToLoad: {page: string, params: any, time: number}; // Page to load once main menu is opened.
     waitingForBrowser = false;
 
+    // lmsace.
+    public categoryTitle;
+
     constructor(logger: CoreLoggerProvider, private sitesProvider: CoreSitesProvider, private domUtils: CoreDomUtilsProvider,
             private wsProvider: CoreWSProvider, private translate: TranslateService, private textUtils: CoreTextUtilsProvider,
             private eventsProvider: CoreEventsProvider, private appProvider: CoreAppProvider, private utils: CoreUtilsProvider,
@@ -1286,6 +1289,24 @@ export class CoreLoginHelperProvider {
 
                 return Promise.reject(this.translate.instant('core.unexpectederror'));
             }
+        });
+    }
+
+
+    getCategorySplash(): Promise<any> {
+        var userid = this.sitesProvider.getCurrentSiteUserId();
+        let data = { userid: userid };
+        return this.sitesProvider.getCurrentSite().read('local_vpt_getCategorySplash', data, {saveToCache: false}).then((result) => {
+            
+            return (result.image || result.title) ? result : false;
+        })
+        
+    }
+
+    loadCategoryTitle(): Promise<any> {
+        return this.categoryTitle || this.getCategorySplash().then((result) => {
+            this.categoryTitle = result.title;
+            return (result.title) ? result.title : false;
         });
     }
 }

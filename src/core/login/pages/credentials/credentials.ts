@@ -222,8 +222,10 @@ export class CoreLoginCredentialsPage {
                 this.credForm.controls['password'].reset();
 
                 this.siteId = id;
+// alert('Test');
+                return this.navCtrl.push('CoreLoginCategorySplashPage');
 
-                return this.loginHelper.goToSiteInitialPage(undefined, undefined, undefined, undefined, this.urlToOpen);
+                // return this.loginHelper.goToSiteInitialPage(undefined, undefined, undefined, undefined, this.urlToOpen);
             });
         }).catch((error) => {
             this.loginHelper.treatUserTokenError(siteUrl, error, username, password);

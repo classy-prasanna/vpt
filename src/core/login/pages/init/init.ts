@@ -21,6 +21,9 @@ import { CoreSitesProvider } from '@providers/sites';
 import { CoreConstants } from '../../../constants';
 import { CoreLoginHelperProvider } from '../../providers/helper';
 
+//lmsace.
+// import { CoreLoginCategorySplashPage } from '../category-splash/category-splash';
+
 /**
  * Page that displays a "splash screen" while the app is being initialized.
  */
@@ -41,6 +44,7 @@ export class CoreLoginInitPage {
     ionViewDidLoad(): void {
         // Wait for the app to be ready.
         this.initDelegate.ready().then(() => {
+
             // Check if there was a pending redirect.
             const redirectData = this.appProvider.getRedirect();
             if (redirectData.siteId) {
@@ -53,7 +57,7 @@ export class CoreLoginInitPage {
                         // The redirect is pointing to a site, load it.
                         return this.sitesProvider.loadSite(redirectData.siteId, redirectData.page, redirectData.params)
                                 .then((loggedIn) => {
-
+                                    // alert('loggedin');
                             if (loggedIn) {
                                 return this.loginHelper.goToSiteInitialPage(this.navCtrl, redirectData.page, redirectData.params,
                                         { animate: false });
@@ -87,7 +91,10 @@ export class CoreLoginInitPage {
         if (this.sitesProvider.isLoggedIn()) {
             if (!this.loginHelper.isSiteLoggedOut()) {
                 // User is logged in, go to site initial page.
-                return this.loginHelper.goToSiteInitialPage();
+                // this.CoreLoginCategorySplash
+                return this.navCtrl.push('CoreLoginCategorySplashPage')
+                // return this.loginHelper.goToSiteInitialPage();
+                // return '';
             } else {
                 // The site is marked as logged out. Logout and try again.
                 return this.sitesProvider.logout().then(() => {

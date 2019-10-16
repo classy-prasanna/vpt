@@ -26,6 +26,10 @@ import { CoreCoursesProvider } from '../../providers/courses';
 import { CoreCoursesDashboardProvider } from '../../providers/dashboard';
 import { CoreCoursesMyCoursesComponent } from '../../components/my-courses/my-courses';
 
+//lmsace.
+// import { CoreLoginCategorySplashPage } from '@core/login/pages/category-splash/category-splash';
+import { CoreLoginHelperProvider } from '@core/login/providers/helper';
+
 /**
  * Page that displays the dashboard.
  */
@@ -58,11 +62,12 @@ export class CoreCoursesDashboardPage implements OnDestroy {
 
     protected isDestroyed;
     protected updateSiteObserver;
+    // protected categorySplash: CoreLoginCategorySplashPage;
 
     constructor(private navCtrl: NavController, private coursesProvider: CoreCoursesProvider,
             private sitesProvider: CoreSitesProvider, private siteHomeProvider: CoreSiteHomeProvider,
             private eventsProvider: CoreEventsProvider, private dashboardProvider: CoreCoursesDashboardProvider,
-            private domUtils: CoreDomUtilsProvider, private blockDelegate: CoreBlockDelegate) {
+            private domUtils: CoreDomUtilsProvider, private blockDelegate: CoreBlockDelegate, private loginHelper: CoreLoginHelperProvider) {
         this.loadSiteName();
     }
 
@@ -133,7 +138,11 @@ export class CoreCoursesDashboardPage implements OnDestroy {
      * Load the site name.
      */
     protected loadSiteName(): void {
-        this.siteName = this.sitesProvider.getCurrentSite().getSiteName();
+        this.loginHelper.loadCategoryTitle().then((title) => {
+            this.siteName = (title) ? title : this.sitesProvider.getCurrentSite().getSiteName();
+        });
+
+        // this.siteName = this.sitesProvider.getCurrentSite().getSiteName();
     }
 
     /**
